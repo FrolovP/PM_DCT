@@ -20,8 +20,10 @@ import { PortfolioView } from './PortfolioView';
 import { ProtectedRoute, PermissionButton } from './ProtectedRoute';
 import { UserManagement } from './UserManagement';
 import { AdminSettings } from './AdminSettings';
+import { ApiKeyManagement } from './ApiKeyManagement';
+import { MessengerIntegrations } from './MessengerIntegrations';
 
-type ViewMode = 'dashboard' | 'offices' | 'projects' | 'portfolios' | 'global-kb' | 'users' | 'settings';
+type ViewMode = 'dashboard' | 'offices' | 'projects' | 'portfolios' | 'global-kb' | 'users' | 'settings' | 'api' | 'integrations';
 
 function App() {
   const { auth, login, hasPermission } = useAuth();
@@ -197,6 +199,12 @@ function App() {
               <ProtectedRoute permission="manage_settings">
                 <NavButton active={viewMode === 'settings'} onClick={() => setViewMode('settings')}>⚙️ Настройки</NavButton>
               </ProtectedRoute>
+              <ProtectedRoute permission="manage_api_keys">
+                <NavButton active={viewMode === 'api'} onClick={() => setViewMode('api')}>🔑 API</NavButton>
+              </ProtectedRoute>
+              <ProtectedRoute permission="manage_integrations">
+                <NavButton active={viewMode === 'integrations'} onClick={() => setViewMode('integrations')}>🤖 Боты</NavButton>
+              </ProtectedRoute>
             </nav>
 
             {/* Mobile nav */}
@@ -361,6 +369,18 @@ function App() {
         {viewMode === 'settings' && (
           <ProtectedRoute permission="manage_settings">
             <AdminSettings />
+          </ProtectedRoute>
+        )}
+
+        {viewMode === 'api' && (
+          <ProtectedRoute permission="manage_api_keys">
+            <ApiKeyManagement />
+          </ProtectedRoute>
+        )}
+
+        {viewMode === 'integrations' && (
+          <ProtectedRoute permission="manage_integrations">
+            <MessengerIntegrations />
           </ProtectedRoute>
         )}
       </main>

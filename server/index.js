@@ -19,6 +19,10 @@ const artifactsRoutes = require('./routes/artifacts');
 const knowledgeRoutes = require('./routes/knowledge');
 const settingsRoutes = require('./routes/settings');
 const auditRoutes = require('./routes/audit');
+const apiKeysRoutes = require('./routes/apiKeys');
+const publicApiRoutes = require('./routes/publicApi');
+const webhooksRoutes = require('./routes/webhooks');
+const messengerRoutes = require('./routes/messenger');
 
 // Импорты middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -116,6 +120,14 @@ app.use('/api/artifacts', authenticate, artifactsRoutes);
 app.use('/api/knowledge', authenticate, knowledgeRoutes);
 app.use('/api/settings', authenticate, settingsRoutes);
 app.use('/api/audit', authenticate, auditRoutes);
+
+// API ключи и интеграции
+app.use('/api/api-keys', authenticate, apiKeysRoutes);
+app.use('/api/webhooks', authenticate, webhooksRoutes);
+app.use('/api/messenger', authenticate, messengerRoutes);
+
+// Публичный API (доступен по API ключу)
+app.use('/api/v1', publicApiRoutes);
 
 // ============================================
 // Health check
