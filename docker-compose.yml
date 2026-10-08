@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Веб-приложение
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: project-office-web
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - project-office-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx с HTTPS (опционально, раскомментируйте если нужен HTTPS)
+  # nginx-proxy:
+  #   image: nginx:alpine
+  #   container_name: project-office-proxy
+  #   ports:
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx-ssl.conf:/etc/nginx/conf.d/default.conf:ro
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro
+  #   depends_on:
+  #     - web
+  #   restart: unless-stopped
+  #   networks:
+  #     - project-office-network
+
+networks:
+  project-office-network:
+    driver: bridge
+
+# Тома для данных (если понадобится в будущем)
+# volumes:
+#   app-data:
+#     driver: local
