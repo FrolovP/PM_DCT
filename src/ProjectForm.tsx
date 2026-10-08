@@ -47,6 +47,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSave, onCan
       id: project?.id || generateId(),
       ...formData,
       tasks: project?.tasks || [],
+      documents: project?.documents || [],
+      artifacts: project?.artifacts || [],
+      structure: project?.structure || [],
+      links: project?.links || [],
+      knowledgeBase: project?.knowledgeBase || [],
       createdAt: project?.createdAt || new Date().toISOString().split('T')[0],
     };
     onSave(newProject);

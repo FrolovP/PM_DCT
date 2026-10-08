@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Project, ProjectType, ProjectStatus } from './types';
+import { Project, ProjectType, ProjectStatus, KBEntry } from './types';
 import {
-  loadProjects,
-  saveProjects,
-  getDashboardStats,
-  PROJECT_TYPE_LABELS,
-  PROJECT_STATUS_LABELS,
+  loadProjects, saveProjects, getDashboardStats,
+  loadGlobalKB, saveGlobalKB,
+  PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS,
 } from './utils';
 import { Dashboard } from './Dashboard';
 import { ProjectCard } from './ProjectCard';
 import { ProjectForm } from './ProjectForm';
-import { ProjectDetail } from './ProjectDetail';
+import { ProjectDetailView } from './ProjectDetailView';
+import { GlobalKnowledgeBase } from './GlobalKnowledgeBase';
 
-type ViewMode = 'dashboard' | 'projects';
+type ViewMode = 'dashboard' | 'projects' | 'global-kb';
 
 function App() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [globalKB, setGlobalKB] = useState<KBEntry[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
   const [filterType, setFilterType] = useState<ProjectType | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'all'>('all');
@@ -27,13 +27,16 @@ function App() {
 
   useEffect(() => {
     setProjects(loadProjects());
+    setGlobalKB(loadGlobalKB());
   }, []);
 
   useEffect(() => {
-    if (projects.length > 0) {
-      saveProjects(projects);
-    }
+    if (projects.length > 0) saveProjects(projects);
   }, [projects]);
+
+  useEffect(() => {
+    if (globalKB.length > 0) saveGlobalKB(globalKB);
+  }, [globalKB]);
 
   const stats = useMemo(() => getDashboardStats(projects), [projects]);
 
@@ -41,7 +44,7 @@ function App() {
     return projects.filter(p => {
       const matchType = filterType === 'all' || p.type === filterType;
       const matchStatus = filterStatus === 'all' || p.status === filterStatus;
-      const matchSearch = searchQuery === '' || 
+      const matchSearch = searchQuery === '' ||
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.manager.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -52,9 +55,7 @@ function App() {
   const handleSaveProject = (project: Project) => {
     setProjects(prev => {
       const exists = prev.find(p => p.id === project.id);
-      if (exists) {
-        return prev.map(p => p.id === project.id ? project : p);
-      }
+      if (exists) return prev.map(p => p.id === project.id ? project : p);
       return [...prev, project];
     });
     setShowForm(false);
@@ -66,31 +67,18 @@ function App() {
     setDeleteConfirm(null);
   };
 
-  const handleUpdateTask = (projectId: string, taskId: string, completed: boolean) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id === projectId) {
-        const updatedTasks = p.tasks.map(t => t.id === taskId ? { ...t, completed } : t);
-        const completedCount = updatedTasks.filter(t => t.completed).length;
-        const progress = updatedTasks.length > 0 ? Math.round((completedCount / updatedTasks.length) * 100) : p.progress;
-        return { ...p, tasks: updatedTasks, progress };
-      }
-      return p;
-    }));
-    // Update viewing project
-    setViewingProject(prev => {
-      if (prev && prev.id === projectId) {
-        const updatedTasks = prev.tasks.map(t => t.id === taskId ? { ...t, completed } : t);
-        const completedCount = updatedTasks.filter(t => t.completed).length;
-        const progress = updatedTasks.length > 0 ? Math.round((completedCount / updatedTasks.length) * 100) : prev.progress;
-        return { ...prev, tasks: updatedTasks, progress };
-      }
-      return prev;
-    });
+  const handleUpdateProject = (updatedProject: Project) => {
+    setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+    setViewingProject(updatedProject);
   };
 
   const handleEditProject = (project: Project) => {
     setEditingProject(project);
     setShowForm(true);
+  };
+
+  const handleGlobalKBUpdate = (entries: KBEntry[]) => {
+    setGlobalKB(entries);
   };
 
   return (
@@ -107,7 +95,7 @@ function App() {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-900">Проектный офис</h1>
-                <p className="text-xs text-gray-500 hidden sm:block">Управление проектами</p>
+                <p className="text-xs text-gray-500 hidden sm:block">Управление проектами и знаниями</p>
               </div>
             </div>
 
@@ -116,9 +104,7 @@ function App() {
               <button
                 onClick={() => setViewMode('dashboard')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  viewMode === 'dashboard'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                  viewMode === 'dashboard' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <span className="hidden sm:inline">📊 </span>Дашборд
@@ -126,12 +112,18 @@ function App() {
               <button
                 onClick={() => setViewMode('projects')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  viewMode === 'projects'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                  viewMode === 'projects' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <span className="hidden sm:inline">📁 </span>Проекты
+              </button>
+              <button
+                onClick={() => setViewMode('global-kb')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  viewMode === 'global-kb' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <span className="hidden sm:inline">📖 </span>База знаний
               </button>
             </nav>
 
@@ -150,16 +142,13 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {viewMode === 'dashboard' && (
-          <Dashboard stats={stats} />
-        )}
+        {viewMode === 'dashboard' && <Dashboard stats={stats} />}
 
         {viewMode === 'projects' && (
           <div className="space-y-4">
             {/* Filters */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
               <div className="flex flex-col sm:flex-row gap-3">
-                {/* Search */}
                 <div className="flex-1 relative">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -172,8 +161,6 @@ function App() {
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                   />
                 </div>
-
-                {/* Type Filter */}
                 <select
                   value={filterType}
                   onChange={e => setFilterType(e.target.value as ProjectType | 'all')}
@@ -184,8 +171,6 @@ function App() {
                     <option key={key} value={key}>{label}</option>
                   ))}
                 </select>
-
-                {/* Status Filter */}
                 <select
                   value={filterStatus}
                   onChange={e => setFilterStatus(e.target.value as ProjectStatus | 'all')}
@@ -197,8 +182,6 @@ function App() {
                   ))}
                 </select>
               </div>
-
-              {/* Active filters */}
               {(filterType !== 'all' || filterStatus !== 'all' || searchQuery) && (
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
                   <span className="text-xs text-gray-500">Фильтры:</span>
@@ -220,10 +203,7 @@ function App() {
                       <button onClick={() => setSearchQuery('')} className="hover:text-indigo-900">×</button>
                     </span>
                   )}
-                  <button
-                    onClick={() => { setFilterType('all'); setFilterStatus('all'); setSearchQuery(''); }}
-                    className="text-xs text-gray-500 hover:text-red-500 ml-auto"
-                  >
+                  <button onClick={() => { setFilterType('all'); setFilterStatus('all'); setSearchQuery(''); }} className="text-xs text-gray-500 hover:text-red-500 ml-auto">
                     Сбросить все
                   </button>
                 </div>
@@ -247,10 +227,7 @@ function App() {
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-1">Проекты не найдены</h3>
                 <p className="text-sm text-gray-500 mb-4">Попробуйте изменить параметры фильтрации или создайте новый проект</p>
-                <button
-                  onClick={() => { setEditingProject(null); setShowForm(true); }}
-                  className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-                >
+                <button onClick={() => { setEditingProject(null); setShowForm(true); }} className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
                   Создать проект
                 </button>
               </div>
@@ -269,6 +246,10 @@ function App() {
             )}
           </div>
         )}
+
+        {viewMode === 'global-kb' && (
+          <GlobalKnowledgeBase entries={globalKB} projects={projects} onUpdate={handleGlobalKBUpdate} />
+        )}
       </main>
 
       {/* Modals */}
@@ -281,10 +262,11 @@ function App() {
       )}
 
       {viewingProject && (
-        <ProjectDetail
+        <ProjectDetailView
           project={viewingProject}
+          allProjects={projects}
           onClose={() => setViewingProject(null)}
-          onUpdateTask={handleUpdateTask}
+          onUpdate={handleUpdateProject}
         />
       )}
 
@@ -304,16 +286,10 @@ function App() {
               </div>
             </div>
             <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
+              <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                 Отмена
               </button>
-              <button
-                onClick={() => handleDeleteProject(deleteConfirm)}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-              >
+              <button onClick={() => handleDeleteProject(deleteConfirm)} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">
                 Удалить
               </button>
             </div>
