@@ -22,6 +22,8 @@ import { UserManagement } from './UserManagement';
 import { AdminSettings } from './AdminSettings';
 import { ApiKeyManagement } from './ApiKeyManagement';
 import { MessengerIntegrations } from './MessengerIntegrations';
+import { MobileNav } from './MobileNav';
+import { BottomNav } from './BottomNav';
 
 type ViewMode = 'dashboard' | 'offices' | 'projects' | 'portfolios' | 'global-kb' | 'users' | 'settings' | 'api' | 'integrations';
 
@@ -208,19 +210,14 @@ function App() {
             </nav>
 
             {/* Mobile nav */}
-            <select
-              className="md:hidden px-2 py-1.5 border border-gray-300 rounded-lg text-sm"
-              value={viewMode}
-              onChange={e => setViewMode(e.target.value as ViewMode)}
-            >
-              {hasPermission('view_dashboard') && <option value="dashboard">📊 Обзор</option>}
-              {hasPermission('view_offices') && <option value="offices">🏢 Офисы</option>}
-              {hasPermission('view_portfolios') && <option value="portfolios">📁 Портфели</option>}
-              {hasPermission('view_projects') && <option value="projects">📋 Проекты</option>}
-              {hasPermission('view_global_kb') && <option value="global-kb">📖 База знаний</option>}
-              {hasPermission('manage_users') && <option value="users">👥 Пользователи</option>}
-              {hasPermission('manage_settings') && <option value="settings">⚙️ Настройки</option>}
-            </select>
+            <MobileNav 
+              viewMode={viewMode} 
+              onViewModeChange={(mode) => setViewMode(mode as ViewMode)}
+              onLogout={() => {
+                localStorage.removeItem('auth');
+                window.location.reload();
+              }}
+            />
 
             <div className="flex items-center gap-3">
               <PermissionButton
@@ -266,7 +263,7 @@ function App() {
       )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-6">
         {viewMode === 'dashboard' && (
           <ProtectedRoute permission="view_dashboard">
             <Dashboard stats={stats} />
@@ -428,6 +425,9 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNav viewMode={viewMode} onViewModeChange={(mode) => setViewMode(mode as ViewMode)} />
     </div>
   );
 }
