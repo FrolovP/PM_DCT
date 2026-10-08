@@ -7,9 +7,37 @@ export type DocCategory = 'regulation' | 'specification' | 'report' | 'protocol'
 export type ArtifactType = 'design' | 'code' | 'test' | 'deployment' | 'documentation' | 'other';
 export type LinkType = 'dependency' | 'related' | 'blocks' | 'blocked_by' | 'duplicate' | 'parent_child';
 export type KBAccess = 'public' | 'restricted' | 'private';
+export type PortfolioType = 'business' | 'architecture' | 'strategic' | 'operational';
 
+// ─── Проектный офис ───
+export interface ProjectOffice {
+  id: string;
+  name: string;
+  description: string;
+  color: string; // hex color for branding
+  icon: string; // emoji
+  director: string;
+  createdAt: string;
+  portfolios: Portfolio[];
+}
+
+// ─── Портфель проектов ───
+export interface Portfolio {
+  id: string;
+  name: string;
+  description: string;
+  type: PortfolioType;
+  officeId: string; // parent office
+  projectIds: string[]; // IDs of projects in this portfolio
+  createdAt: string;
+  strategicGoal: string;
+}
+
+// ─── Проект ───
 export interface Project {
   id: string;
+  officeId: string; // parent office
+  portfolioId: string; // parent portfolio (can be empty)
   name: string;
   type: ProjectType;
   status: ProjectStatus;
@@ -30,6 +58,7 @@ export interface Project {
   createdAt: string;
 }
 
+// ─── Задача ───
 export interface Task {
   id: string;
   title: string;
@@ -41,6 +70,7 @@ export interface Task {
   completed: boolean;
   tags: string[];
   subtasks: Subtask[];
+  crossOfficeLinks: CrossOfficeLink[];
 }
 
 export interface Subtask {
@@ -49,6 +79,18 @@ export interface Subtask {
   completed: boolean;
 }
 
+// ─── Межофисная связь через задачу ───
+export interface CrossOfficeLink {
+  id: string;
+  targetProjectId: string;
+  targetProjectName: string;
+  targetOfficeId: string;
+  targetOfficeName: string;
+  linkType: LinkType;
+  description: string;
+}
+
+// ─── Документ ───
 export interface Document {
   id: string;
   title: string;
@@ -62,6 +104,7 @@ export interface Document {
   content: string;
 }
 
+// ─── Артефакт ───
 export interface Artifact {
   id: string;
   title: string;
@@ -74,6 +117,7 @@ export interface Artifact {
   relatedTasks: string[];
 }
 
+// ─── Структура проекта (WBS) ───
 export interface StructureNode {
   id: string;
   title: string;
@@ -84,14 +128,18 @@ export interface StructureNode {
   endDate: string;
 }
 
+// ─── Связь проекта ───
 export interface ProjectLink {
   id: string;
   targetProjectId: string;
   targetProjectName: string;
+  targetOfficeId: string;
+  targetOfficeName: string;
   linkType: LinkType;
   description: string;
 }
 
+// ─── Запись БЗ ───
 export interface KBEntry {
   id: string;
   title: string;
@@ -105,6 +153,7 @@ export interface KBEntry {
   relatedProjects: string[];
 }
 
+// ─── Статистика ───
 export interface DashboardStats {
   total: number;
   active: number;
@@ -112,4 +161,13 @@ export interface DashboardStats {
   byType: Record<ProjectType, number>;
   totalBudget: number;
   totalSpent: number;
+}
+
+export interface OfficeStats {
+  totalProjects: number;
+  activeProjects: number;
+  totalPortfolios: number;
+  totalBudget: number;
+  totalSpent: number;
+  crossOfficeLinks: number;
 }
