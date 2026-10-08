@@ -30,6 +30,86 @@
   overflow: hidden;
 }
 
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Увеличиваем области нажатия */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Улучшаем скролл */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Отключаем zoom на input */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Улучшаем модальные окна */
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Оптимизируем таблицы */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Улучшаем формы */
+  form {
+    padding: 1rem;
+  }
+
+  /* Safe area для iPhone */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  button:active, 
+  a:active, 
+  [role="button"]:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+  }
+}
+
+/* Prevent text selection on buttons */
+button, [role="button"] {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Smooth transitions */
 * {
   scroll-behavior: smooth;
