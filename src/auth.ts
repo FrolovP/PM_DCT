@@ -44,7 +44,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'view_artifacts', 'create_artifacts', 'edit_artifacts', 'delete_artifacts',
     'view_knowledge_base', 'create_knowledge_base', 'edit_knowledge_base', 'delete_knowledge_base',
     'view_global_kb', 'create_global_kb', 'edit_global_kb', 'delete_global_kb',
-    'manage_users', 'view_all_projects', 'cross_office_links'
+    'manage_users', 'manage_settings', 'view_audit', 'view_all_projects', 'cross_office_links'
   ],
   office_director: [
     'view_dashboard', 'view_offices', 'edit_offices',

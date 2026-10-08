@@ -19,8 +19,9 @@ import { OfficeSelector } from './OfficeSelector';
 import { PortfolioView } from './PortfolioView';
 import { ProtectedRoute, PermissionButton } from './ProtectedRoute';
 import { UserManagement } from './UserManagement';
+import { AdminSettings } from './AdminSettings';
 
-type ViewMode = 'dashboard' | 'offices' | 'projects' | 'portfolios' | 'global-kb' | 'users';
+type ViewMode = 'dashboard' | 'offices' | 'projects' | 'portfolios' | 'global-kb' | 'users' | 'settings';
 
 function App() {
   const { auth, login, hasPermission } = useAuth();
@@ -193,6 +194,9 @@ function App() {
               <ProtectedRoute permission="manage_users">
                 <NavButton active={viewMode === 'users'} onClick={() => setViewMode('users')}>👥 Пользователи</NavButton>
               </ProtectedRoute>
+              <ProtectedRoute permission="manage_settings">
+                <NavButton active={viewMode === 'settings'} onClick={() => setViewMode('settings')}>⚙️ Настройки</NavButton>
+              </ProtectedRoute>
             </nav>
 
             {/* Mobile nav */}
@@ -207,6 +211,7 @@ function App() {
               {hasPermission('view_projects') && <option value="projects">📋 Проекты</option>}
               {hasPermission('view_global_kb') && <option value="global-kb">📖 База знаний</option>}
               {hasPermission('manage_users') && <option value="users">👥 Пользователи</option>}
+              {hasPermission('manage_settings') && <option value="settings">⚙️ Настройки</option>}
             </select>
 
             <div className="flex items-center gap-3">
@@ -350,6 +355,12 @@ function App() {
         {viewMode === 'users' && (
           <ProtectedRoute permission="manage_users">
             <UserManagement />
+          </ProtectedRoute>
+        )}
+
+        {viewMode === 'settings' && (
+          <ProtectedRoute permission="manage_settings">
+            <AdminSettings />
           </ProtectedRoute>
         )}
       </main>
