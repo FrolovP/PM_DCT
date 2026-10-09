@@ -4,15 +4,15 @@
 # Многоэтапная сборка для минимизации размера образа
 
 # Этап 1: Сборка приложения
-FROM node:18-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
 # Копируем файлы зависимостей
 COPY package*.json ./
 
-# Устанавливаем зависимости
-RUN npm ci --only=production
+# Устанавливаем все зависимости (включая devDependencies для сборки)
+RUN npm ci
 
 # Копируем исходный код
 COPY . .
